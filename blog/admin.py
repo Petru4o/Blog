@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Post, Comment
+from .models import Post, Comment, Category
 
 
 @admin.register(Post)
@@ -17,3 +17,5 @@ class CommentAdmin(admin.ModelAdmin):
     list_filter = ('status', 'publish')
     search_fields = ('name', 'email', 'content')
 
+
+admin.site.register(Category)
