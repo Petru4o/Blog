@@ -12,7 +12,7 @@ def home(request):
 
     all_posts = Post.newmanager.all()
 
-    return render(request, 'index.html', {'posts': all_posts})
+    return render(request, 'blog_1/index.html', {'posts': all_posts})
 
 
 def post_single(request, post):
@@ -41,11 +41,11 @@ def post_single(request, post):
             return HttpResponseRedirect('/' + post.slug)
     else:
         comment_form = NewCommentForm()
-    return render(request, 'single.html', {'post': post, 'comments':  user_comment, 'comments': comments, 'comment_form': comment_form, 'allcomments': allcomments, })
+    return render(request, 'blog_1/single.html', {'post': post, 'comments':  user_comment, 'comments': comments, 'comment_form': comment_form, 'allcomments': allcomments, })
 
 
 class CatListView(ListView):
-    template_name = 'category.html'
+    template_name = 'blog_1/category.html'
     context_object_name = 'catlist'
 
     def get_queryset(self):
@@ -96,7 +96,7 @@ def post_search(request):
 
             results = Post.objects.filter(query)
 
-    return render(request, 'search.html',
+    return render(request, 'blog_1/search.html',
                   {'form': form,
                    'q': q,
                    'results': results})
