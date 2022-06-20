@@ -35,4 +35,6 @@ class PostSearchForm(forms.Form):
         self.fields['c'].label = 'Category'
         self.fields['q'].label = 'Search For'
         self.fields['q'].widget.attrs.update(
-            {'class': 'form-control'})
+            {'class': 'form-control menudd'})
+        self.fields['q'].widget.attrs.update(
+            {'data-toggle': 'dropdown'})

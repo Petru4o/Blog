@@ -1,4 +1,6 @@
+from django.core import serializers
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, HttpResponseRedirect
 from .models import Post, Comment, Category
 from .forms import NewCommentForm, PostSearchForm
@@ -68,6 +70,18 @@ def post_search(request):
     c = ''
     results = []
     query = Q()
+
+    if request.POST.get('action') == 'post':
+        search_string = str(request.POST.get('ss'))
+
+        if search_string is not None:
+            search_string = Post.objects.filter(
+                title__contains=search_string)[:5]
+
+            data = serializers.serialize('json', list(
+                search_string), fields=('id', 'title', 'slug'))
+
+            return JsonResponse({'search_string': data})
 
     if 'q' in request.GET:
         form = PostSearchForm(request.GET)
