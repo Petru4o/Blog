@@ -3,6 +3,8 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, Pas
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
+from .models import Profile
+
 
 class UserLoginForm(AuthenticationForm):
     username = forms.CharField(widget=forms.TextInput(
@@ -107,20 +109,24 @@ class UserEditForm(forms.ModelForm):
 
     email = forms.EmailField(
         max_length=200, widget=forms.TextInput(
-            attrs={'class': 'form-control mb-3', 'placeholder': 'Email', 'id': 'form-email'}))
+            attrs={'class': 'form-control mb-3', 'placeholder': 'Old Password', 'id': 'form-email'}))
 
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'email')
 
-    def clean_email(self):
-        email = self.cleaned_data['email']
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError(
-                'Please use another Email, that is already taken')
-        return email
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['last_name'].required = False
         self.fields['email'].required = False
+
+
+class UserProfileForm(forms.ModelForm):
+
+    class Meta:
+        model = Profile
+        fields = ['bio', 'avatar']
+
+        widgets = {
+            'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': '5'}),
+        }
