@@ -1,17 +1,19 @@
 {% extends "base/base.html" %}
 
     {% block title %}
-   Catlist
+    Catlist
     {% endblock %}
 
     {% block content %}
-
-       <div class="album py-5 bg-light">
-        <div class="container">
-          <div class="row">
-        <div class="col-12 pb-5"><h1> List of {{catlist.cat}} posts</h1></div>
-        {% for post in catlist.posts %}
-            <div class="col-md-4">
+    {% include "base/nav-main.html" %}
+    <div class="album py-5 bg-light">
+      <div class="container">
+        <div class="row">
+          <div class="col-12 pb-5">
+            <h1> List of {{catlist.cat}} posts</h1>
+          </div>
+          {% for post in catlist.posts %}
+          <div class="col-md-4">
             <a class="text-dark" href="{{post.get_absolute_url}}">
               <div class="card mb-4 box-shadow">
                 <img class="card-img-top" src="{{post.image.url}}" alt="{{ post.title }}">
@@ -23,11 +25,11 @@
                   </div>
                 </div>
               </div>
-              </a>
-            </div>
-        {% endfor %}
+            </a>
           </div>
+          {% endfor %}
         </div>
       </div>
+    </div>
 
     {% endblock %}

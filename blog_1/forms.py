@@ -1,4 +1,6 @@
 from django import forms
+
+
 from .models import Comment, Category
 from mptt.forms import TreeNodeChoiceField
 
@@ -38,3 +40,7 @@ class PostSearchForm(forms.Form):
             {'class': 'form-control menudd'})
         self.fields['q'].widget.attrs.update(
             {'data-toggle': 'dropdown'})
+
+
+
+

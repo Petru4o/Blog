@@ -8,7 +8,7 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
-from .forms import RegistrationForm
+from .forms import RegistrationForm, UserEditForm
 from .token import account_activation_token
 
 
@@ -54,3 +54,28 @@ def activate(request, uidb64, token):
         return redirect('login')
     else:
         return render(request, 'registration/activation_invalid.html')
+
+
+@login_required
+def delete_user(request):
+    if request.method == 'POST':
+        user = User.objects.get(username=request.user)
+        user.is_active = False
+        user.save()
+        return redirect('accounts:login')
+
+    return render(request, 'accounts/delete.html')
+
+
+@login_required
+def edit(request):
+    if request.method == 'POST':
+        user_form = UserEditForm(instance=request.user,
+                                 data=request.POST)
+        if user_form.is_valid():
+            user_form.save()
+    else:
+        user_form = UserEditForm(instance=request.user)
+    return render(request,
+                  'accounts/update.html',
+                  {'user_form': user_form})
