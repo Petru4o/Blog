@@ -123,6 +123,6 @@ MEDIA_URL = '/media/'
 
 LOGIN_REDIRECT_URL = 'accounts:profile'
 LOGIN_URL = 'login'
-LOGOUT_URL = 'logout'
+LOGOUT_REDIRECT_URL = 'login'
 
-EMAIL_BACKEND = 'django.core.mail.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
