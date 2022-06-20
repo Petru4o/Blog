@@ -19,6 +19,11 @@ def post_single(request, post):
 
     post = get_object_or_404(Post, slug=post, status='published')
 
+    fav = bool
+
+    if post.favourites.filter(id=request.user.id).exists():
+        fav = True
+
     allcomments = post.comments.filter(status=True)
     page = request.GET.get('page', 1)
 
@@ -41,7 +46,7 @@ def post_single(request, post):
             return HttpResponseRedirect('/' + post.slug)
     else:
         comment_form = NewCommentForm()
-    return render(request, 'blog_1/single.html', {'post': post, 'comments':  user_comment, 'comments': comments, 'comment_form': comment_form, 'allcomments': allcomments, })
+    return render(request, 'blog_1/single.html', {'post': post, 'comments':  user_comment, 'comments': comments, 'comment_form': comment_form, 'allcomments': allcomments, 'fav': fav })
 
 
 class CatListView(ListView):

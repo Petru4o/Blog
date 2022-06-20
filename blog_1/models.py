@@ -37,6 +37,9 @@ class Post(models.Model):
     content = models.TextField()
     status = models.CharField(max_length=10, choices=options, default='draft')
 
+    favourites = models.ManyToManyField(
+        User, related_name='favourite', default=None, blank=True)
+
     objects = models.Manager()
     newmanager = NewManager()
 

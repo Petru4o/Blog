@@ -24,9 +24,23 @@
 <div class="container">
   <div class="row justify-content-md-center pt-5">
 
-    <div class="col-md-7">
+    <div class="col-md-7 d-flex justify-content-between">
       <h1>{{post.title}}</h1>
-    </div>
+        {% if request.user.is_authenticated %}
+
+            {% if fav %}
+                <div>
+                    <a href="{% url 'accounts:favourite_add' post.id %}" class="btn btn-outline-primary">Remove Favourites</a>
+                </div>
+            {% else %}
+        <div>
+            <a href="{% url 'accounts:favourite_add' post.id %}" class="btn btn-outline-primary">Add to Favourites</a>
+        </div>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'accounts:register' %}" class="btn btn-outline-primary">Add to Favourites</a>
+        {% endif %}
+         </div>
     <div class="col-md-9"><img class="card-img-top" src="{{post.image.url}}" alt="{{ post.title }}"></div>
     <div class="col-md-7">
       <p>{{post.content|safe}}</p>
