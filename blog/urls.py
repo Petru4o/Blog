@@ -1,10 +1,9 @@
-from django.urls import path
-from . import views
-
-app_name = 'blog'
+from django.conf.urls.static import static
+from django.conf import settings
+from django.contrib import admin
+from django.urls import path, include
 
 urlpatterns = [
-    path('', views.home, name='homepage'),
-    path('<slug:post>/', views.post_single, name='post_single'),
-    path('category/<category>', views.CatListView.as_view(), name='category'),
-]
+    path('admin/', admin.site.urls),
+    path('', include('blog_1.urls', namespace='blog')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
