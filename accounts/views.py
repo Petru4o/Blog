@@ -87,3 +87,13 @@ def edit(request):
     return render(request,
                   'accounts/update.html',
                   {'user_form': user_form, 'profile_form': profile_form})
+
+
+@login_required
+def avatar(request):
+    user = User.objects.get(username=request.user)
+    avatar = Profile.objects.filter(user=user)
+    context = {
+        'avatar': avatar
+    }
+    return context
