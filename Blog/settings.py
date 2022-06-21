@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'blog_1',
     'mptt',
     'accounts',
+
 ]
 
 MIDDLEWARE = [
