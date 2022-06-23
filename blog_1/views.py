@@ -1,3 +1,4 @@
+from django.contrib.postgres.search import SearchRank, SearchQuery, SearchVector
 from django.core import serializers
 from django.db.models import Q
 from django.http import JsonResponse
@@ -9,14 +10,12 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 def home(request):
-
     all_posts = Post.newmanager.all()
 
     return render(request, 'blog_1/index.html', {'posts': all_posts})
 
 
 def post_single(request, post):
-
     post = get_object_or_404(Post, slug=post, status='published')
 
     fav = bool
@@ -46,7 +45,9 @@ def post_single(request, post):
             return HttpResponseRedirect('/' + post.slug)
     else:
         comment_form = NewCommentForm()
-    return render(request, 'blog_1/single.html', {'post': post, 'comments':  user_comment, 'comments': comments, 'comment_form': comment_form, 'allcomments': allcomments, 'fav': fav })
+    return render(request, 'blog_1/single.html',
+                  {'post': post, 'comments': user_comment, 'comments': comments, 'comment_form': comment_form,
+                   'allcomments': allcomments, 'fav': fav})
 
 
 class CatListView(ListView):
@@ -72,34 +73,19 @@ def category_list(request):
 def post_search(request):
     form = PostSearchForm()
     q = ''
-    c = ''
     results = []
-    query = Q()
-
-    if request.POST.get('action') == 'post':
-        search_string = str(request.POST.get('ss'))
-
-        if search_string is not None:
-            search_string = Post.objects.filter(
-                title__contains=search_string)[:5]
-
-            data = serializers.serialize('json', list(
-                search_string), fields=('id', 'title', 'slug'))
-
-            return JsonResponse({'search_string': data})
 
     if 'q' in request.GET:
         form = PostSearchForm(request.GET)
         if form.is_valid():
             q = form.cleaned_data['q']
-            c = form.cleaned_data['c']
 
-            if c is not None:
-                query &= Q(category=c)
-            if q is not None:
-                query &= Q(title__contains=q)
+            vector = SearchVector('title', weight='A') + \
+                     SearchVector('content', weight='B')
+            query = SearchQuery(q)
 
-            results = Post.objects.filter(query)
+            results = Post.objects.annotate(
+                rank=SearchRank(vector, query, cover_density=True)).order_by('-rank')
 
     return render(request, 'blog_1/search.html',
                   {'form': form,
