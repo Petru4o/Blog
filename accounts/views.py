@@ -1,6 +1,7 @@
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
+from django.db.models import F, Q
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -8,7 +9,7 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
-from blog_1.models import Post
+from blog_1.models import Post, Vote
 from .forms import RegistrationForm, UserEditForm, UserProfileForm
 from .token import account_activation_token
 from .models import Profile
@@ -34,7 +35,6 @@ def like(request):
         return JsonResponse({'result': result, })
 
 
-
 @login_required
 def favourite_list(request):
     new = Post.newmanager.filter(favourites=request.user)
@@ -43,7 +43,7 @@ def favourite_list(request):
                   {'new': new})
 
 
-@ login_required
+@login_required
 def favourite_add(request, id):
     post = get_object_or_404(Post, id=id)
     if post.favourites.filter(id=request.user.id).exists():
@@ -97,7 +97,6 @@ def edit(request):
 
 @login_required
 def delete_user(request):
-
     if request.method == 'POST':
         user = User.objects.get(username=request.user)
         user.is_active = False
@@ -144,3 +143,117 @@ def activate(request, uidb64, token):
         return redirect('login')
     else:
         return render(request, 'registration/activation_invalid.html')
+
+
+def thumbs(request):
+
+    if request.POST.get('action') == 'thumbs':
+
+        id = int(request.POST.get('postid'))
+        button = request.POST.get('button')
+        update = Post.objects.get(id=id)
+
+        if update.thumbs.filter(id=request.user.id).exists():
+
+            # Get the users current vote (True/False)
+            q = Vote.objects.get(
+                Q(post_id=id) & Q(user_id=request.user.id))
+            evote = q.vote
+
+            if evote == True:
+
+                # Now we need action based upon what button pressed
+
+                if button == 'thumbsup':
+
+                    update.thumbsup = F('thumbsup') - 1
+                    update.thumbs.remove(request.user)
+                    update.save()
+                    update.refresh_from_db()
+                    up = update.thumbsup
+                    down = update.thumbsdown
+                    q.delete()
+
+                    return JsonResponse({'up': up, 'down': down, 'remove': 'True'})
+
+                if button == 'thumbsdown':
+
+                    # Change vote in Post
+                    update.thumbsup = F('thumbsup') - 1
+                    update.thumbsdown = F('thumbsdown') + 1
+                    update.save()
+
+                    # Update Vote
+
+                    q.vote = False
+                    q.save(update_fields=['vote'])
+
+                    # Return updated votes
+                    update.refresh_from_db()
+                    up = update.thumbsup
+                    down = update.thumbsdown
+
+                    return JsonResponse({'up': up, 'down': down})
+
+            pass
+
+            if evote == False:
+
+                if button == 'thumbsup':
+
+                    # Change vote in Post
+                    update.thumbsup = F('thumbsup') + 1
+                    update.thumbsdown = F('thumbsdown') - 1
+                    update.save()
+
+                    # Update Vote
+
+                    q.vote = True
+                    q.save(update_fields=['vote'])
+
+                    # Return updated votes
+                    update.refresh_from_db()
+                    up = update.thumbsup
+                    down = update.thumbsdown
+
+                    return JsonResponse({'up': up, 'down': down})
+
+                if button == 'thumbsdown':
+
+                    update.thumbsdown = F('thumbsdown') - 1
+                    update.thumbs.remove(request.user)
+                    update.save()
+                    update.refresh_from_db()
+                    up = update.thumbsup
+                    down = update.thumbsdown
+                    q.delete()
+
+                    return JsonResponse({'up': up, 'down': down, 'remove': 'True'})
+
+        else:        # New selection
+
+            if button == 'thumbsup':
+                update.thumbsup = F('thumbsup') + 1
+                update.thumbs.add(request.user)
+                update.save()
+                # Add new vote
+                new = Vote(post_id=id, user_id=request.user.id, vote=True)
+                new.save()
+            else:
+                # Add vote down
+                update.thumbsdown = F('thumbsdown') + 1
+                update.thumbs.add(request.user)
+                update.save()
+                # Add new vote
+                new = Vote(post_id=id, user_id=request.user.id, vote=False)
+                new.save()
+
+            # Return updated votes
+            update.refresh_from_db()
+            up = update.thumbsup
+            down = update.thumbsdown
+
+            return JsonResponse({'up': up, 'down': down})
+
+    pass
+
